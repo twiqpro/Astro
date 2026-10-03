@@ -117,9 +117,6 @@ export default function ChartAnswers() {
           </text>
         </g>
       </svg>
-      <figcaption className="px-6 pb-5 text-center text-xs leading-relaxed text-ink/60">
-        The charts are linked, then the timing is written by hand. This is the shape of an answer, drawn for one birth.
-      </figcaption>
     </figure>
   );
 }

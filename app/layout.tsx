@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { Cormorant_Garamond, Geist, Geist_Mono } from "next/font/google";
 import SiteFooter from "@/components/SiteFooter";
@@ -28,6 +28,11 @@ const canela = localFont({
   display: "swap",
   adjustFontFallback: "Times New Roman",
 });
+
+export const viewport: Viewport = {
+  colorScheme: "only light",
+  themeColor: "#f7f3ea",
+};
 
 export const metadata: Metadata = {
   title: "moolank — Handwritten kundli by a qualified astrologer",

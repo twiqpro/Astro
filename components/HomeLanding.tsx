@@ -67,20 +67,20 @@ export default function HomeLanding({ form }: { form: ReactNode }) {
             <h1 className="font-headline mt-4 text-5xl font-medium leading-[0.95] text-plum sm:text-6xl lg:text-7xl">
               More than just a kundli.
               <br />
-              Drawn by hand.
+              Deep insights about you.
             </h1>
             <p className="mt-6 max-w-xl text-xl leading-snug font-medium text-plum sm:text-2xl">
               100% done by qualified astrologers. No AI, no machines.
             </p>
             <p className="mt-5 max-w-xl text-base leading-relaxed text-ink/80">
-              You came for an answer, not a printout. Marriage, work, the years just ahead. Send the minute and place you were born. A qualified astrologer draws your chart by hand and writes what it means. That answer comes to your WhatsApp.
+              Marriage, work, money, health, the years ahead. An astrologer reads your birth time and place, draws the chart by hand, and writes what it means. You get the kundli and those answers by email and WhatsApp.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
               <a
                 href="#request"
                 className="inline-flex items-center justify-center rounded-full bg-plum px-6 py-3.5 text-base font-semibold text-gold-soft shadow-lg transition hover:bg-plum-dark"
               >
-                Request your handwritten kundali at Rs499
+                Request your handwritten kundli at Rs499
               </a>
             </div>
           </div>
