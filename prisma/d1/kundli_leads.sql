@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS kundli_leads (
   longitude REAL NOT NULL,
   email TEXT NOT NULL,
   phone TEXT NOT NULL,
+  special_focus TEXT,
   payment_status TEXT NOT NULL DEFAULT 'pending',
   cashfree_order_id TEXT,
   cashfree_payment_id TEXT,

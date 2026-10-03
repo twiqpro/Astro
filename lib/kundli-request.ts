@@ -21,6 +21,7 @@ export const kundliRequestSchema = z.object({
   longitude: z.number(),
   email: z.string().email(),
   phone: z.string().regex(/^[6-9]\d{9}$/),
+  specialFocus: z.array(z.enum(['Money', 'Career', 'Health', 'Marriage'])).min(1),
 })
 
 export type KundliRequestInput = z.infer<typeof kundliRequestSchema>
@@ -67,7 +68,7 @@ export async function createPendingLead(orderId: string, input: KundliRequestInp
 async function emailSettings() {
   let apiKey = process.env.RESEND_API_KEY
   let to = process.env.NOTIFY_EMAIL || 'twiq.pro@gmail.com'
-  let from = process.env.RESEND_FROM || 'Jyotish Verify <alerts@twiq.pro>'
+  let from = process.env.RESEND_FROM || 'moolank <alerts@twiq.pro>'
 
   try {
     const { env } = await getCloudflareContext({ async: true })
@@ -108,6 +109,7 @@ async function sendAstrologyRequestEmail(lead: SavedLead) {
     ['Longitude', String(lead.longitude)],
     ['Email', lead.email],
     ['Phone', lead.phone],
+    ['Special focus', lead.specialFocus || ''],
     ['Payment status', lead.paymentStatus],
     ['Amount', amount],
     ['Order ID', lead.cashfreeOrderId || ''],
@@ -117,7 +119,7 @@ async function sendAstrologyRequestEmail(lead: SavedLead) {
   const text = rows.map(([label, value]) => `${label}: ${value}`).join('\n')
 
   const html = `
-    <h1>New astrology request</h1>
+    <h1>New moolank request</h1>
     <p>Every detail saved for this request is below, including payment status.</p>
     <table cellpadding="8" cellspacing="0" border="1" style="border-collapse:collapse">
       ${rows
@@ -129,7 +131,7 @@ async function sendAstrologyRequestEmail(lead: SavedLead) {
   const { error } = await resend.emails.send({
     from,
     to,
-    subject: `New astrology request — ${lead.fullName}`,
+    subject: `New moolank request — ${lead.fullName}`,
     text,
     html,
   })

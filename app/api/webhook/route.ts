@@ -1,11 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { fetchCashfreePayments } from '@/lib/cashfree'
 import { findLeadByOrderId, updateLead } from '@/lib/lead-store'
 import { markPaidAndNotify } from '@/lib/kundli-request'
+
+function readWebhook(body: {
+  data?: {
+    order?: { order_id?: string }
+    payment?: { cf_payment_id?: string | number; payment_status?: string }
+    orderId?: string
+    txStatus?: string
+    referenceId?: string | number
+  }
+  orderId?: string
+  txStatus?: string
+  referenceId?: string | number
+}) {
+  const data = body.data || {}
+  return {
+    orderId: data.order?.order_id || data.orderId || body.orderId || '',
+    status: data.payment?.payment_status || data.txStatus || body.txStatus || '',
+    paymentId: data.payment?.cf_payment_id || data.referenceId || body.referenceId || null,
+  }
+}
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { orderId, txStatus, referenceId } = body.data || body
+    const { orderId, status, paymentId: webhookPaymentId } = readWebhook(body)
 
     if (!orderId) {
       return NextResponse.json(
@@ -14,19 +35,31 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const isPaid = txStatus === 'SUCCESS'
-    const paymentId = referenceId ? String(referenceId) : null
+    const payments = await fetchCashfreePayments(orderId).catch(() => null)
+    const confirmed = payments?.find((payment) => payment.payment_status === 'SUCCESS')
+    const paymentId = confirmed?.cf_payment_id
+      ? String(confirmed.cf_payment_id)
+      : webhookPaymentId
+        ? String(webhookPaymentId)
+        : null
 
-    if (isPaid) {
+    if (confirmed) {
       await markPaidAndNotify(orderId, paymentId)
       return NextResponse.json({ success: true })
+    }
+
+    if (status === 'SUCCESS') {
+      return NextResponse.json(
+        { error: 'Payment was not confirmed with Cashfree yet' },
+        { status: 500 }
+      )
     }
 
     const lead = await findLeadByOrderId(orderId)
 
     if (lead) {
       await updateLead(lead.id, {
-        paymentStatus: txStatus === 'FAILED' ? 'failed' : 'pending',
+        paymentStatus: status === 'FAILED' ? 'failed' : 'pending',
         cashfreePaymentId: paymentId || lead.cashfreePaymentId,
       })
     }

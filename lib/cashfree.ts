@@ -68,7 +68,7 @@ export async function createCashfreeOrder(input: {
       order_id: input.orderId,
       order_amount: input.amount,
       order_currency: "INR",
-      order_note: "Jyotish Verify Kundli report",
+      order_note: "moolank handwritten kundli",
       customer_details: {
         customer_id: input.customerId,
         customer_name: input.customerName.slice(0, 100),

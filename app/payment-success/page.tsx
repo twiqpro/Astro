@@ -20,13 +20,7 @@ function PaymentSuccessContent() {
       }
 
       const leadDataStr = sessionStorage.getItem('pendingLeadData')
-      if (!leadDataStr) {
-        setStatus('error')
-        setMessage('Lead data not found. Please contact support.')
-        return
-      }
-
-      const leadData = JSON.parse(leadDataStr)
+      const leadData = leadDataStr ? JSON.parse(leadDataStr) : undefined
 
       try {
         const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/api/verify-payment`, {

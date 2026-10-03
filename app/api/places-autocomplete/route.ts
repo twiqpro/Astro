@@ -21,7 +21,7 @@ async function timezoneOffsetHours(lat: number, lng: number) {
 async function searchPhoton(input: string) {
   const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(input)}&limit=6&lang=en&lat=22.5&lon=79`
   const response = await fetch(url, {
-    headers: { 'User-Agent': 'JyotishVerify/1.0' },
+    headers: { 'User-Agent': 'moolank/1.0' },
   })
 
   if (!response.ok) {

@@ -1,11 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import PlacesAutocomplete from '@/components/PlacesAutocomplete'
-import ZodiacBackdrop from '@/components/ZodiacBackdrop'
+import HomeLanding from '@/components/HomeLanding'
 import { load } from '@cashfreepayments/cashfree-js'
 
 const MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'] as const
@@ -24,6 +24,8 @@ function todayIsoDate() {
   return `${today.getFullYear()}-${month}-${day}`
 }
 
+const FOCUS_OPTIONS = ['Money', 'Career', 'Health', 'Marriage'] as const
+
 const formSchema = z.object({
   fullName: z.string().min(2, 'Name must be at least 2 characters'),
   gender: z.enum(['Male', 'Female'], { message: 'Please select a gender' }),
@@ -34,6 +36,7 @@ const formSchema = z.object({
   longitude: z.number(),
   email: z.string().email('Invalid email address'),
   phone: z.string().regex(/^[6-9]\d{9}$/, 'Invalid Indian mobile number'),
+  specialFocus: z.array(z.enum(FOCUS_OPTIONS)).min(1, 'Choose at least one focus'),
 })
 
 type FormData = z.infer<typeof formSchema>
@@ -50,9 +53,19 @@ export default function Home() {
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(formSchema),
+    defaultValues: { specialFocus: [] },
   })
 
   const dateOfBirth = watch('dateOfBirth')
+
+  useEffect(() => {
+    if (window.location.hostname === 'www.moolank.life') {
+      const next = new URL(window.location.href)
+      next.protocol = 'https:'
+      next.hostname = 'moolank.life'
+      window.location.replace(next.toString())
+    }
+  }, [])
 
   const handlePlaceSelect = (place: { name: string; lat: number; lng: number }) => {
     setPlaceData(place)
@@ -77,6 +90,7 @@ export default function Home() {
           longitude: data.longitude,
           email: data.email,
           phone: data.phone,
+          specialFocus: data.specialFocus,
         }),
       })
 
@@ -97,45 +111,24 @@ export default function Home() {
       }
 
       const cashfree = await load({ mode: result.cashfreeMode === 'production' ? 'production' : 'sandbox' })
-
-      const checkoutOptions = {
+      const checkout = await cashfree.checkout({
         paymentSessionId: result.sessionId,
-        returnUrl: `${window.location.origin}${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/payment-success?order_id=${result.orderId}`,
+        redirectTarget: '_self',
+      })
+      if (checkout?.error) {
+        throw new Error(checkout.error.message || 'Cashfree could not open checkout')
       }
-
-      cashfree.checkout(checkoutOptions)
     } catch (error) {
       console.error('Payment initiation error:', error)
-      alert('Could not save your details. Please submit again.')
+      alert(error instanceof Error ? error.message : 'Could not save your details. Please submit again.')
     } finally {
       setIsSubmitting(false)
     }
   }
 
   return (
-    <div className="relative min-h-screen bg-cream">
-      <ZodiacBackdrop />
-      <div className="relative max-w-2xl mx-auto px-4 py-8 sm:px-6">
-        {/* 
-          INSTAGRAM ADS COMPLIANCE NOTE:
-          Avoid absolute claims like "100% authentic" or "100% accurate" in ad copy.
-          Meta's advertising policies for astrology services prohibit guarantees of absolute accuracy.
-          Current copy uses softened language to emphasize trust while staying compliant.
-          Review: https://www.facebook.com/business/help/2150157295254833
-        */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-plum mb-3">
-            Jyotish Verify
-          </h1>
-          <p className="text-lg text-plum/80 mb-2">
-            Authentic Kundli Analysis
-          </p>
-          <p className="text-base text-plum/70">
-            Validated manually by experienced astrologers
-          </p>
-        </div>
-
-        <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-gold/40 p-6 sm:p-8 mb-6">
+    <HomeLanding
+      form={
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -267,8 +260,31 @@ export default function Home() {
                 <p className="text-red-500 text-sm mt-1">{errors.phone.message}</p>
               )}
               <p className="text-xs text-gray-500 mt-1">
-                Your Kundli report will be sent to this number
+                The handwritten kundli and answers are sent to this number
               </p>
+            </div>
+
+            <div>
+              <p className="block text-sm font-semibold text-gray-700 mb-1">
+                Special focus <span className="text-red-500">*</span>
+              </p>
+              <p className="text-xs text-gray-500 mb-2">Choose every area the astrologer should answer. You can select more than one.</p>
+              <div className="grid grid-cols-2 gap-3">
+                {FOCUS_OPTIONS.map((option) => (
+                  <label key={option} className="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg cursor-pointer text-gray-900 hover:bg-gold-soft has-[:checked]:bg-plum has-[:checked]:text-gold-soft has-[:checked]:border-plum">
+                    <input
+                      {...register('specialFocus')}
+                      type="checkbox"
+                      value={option}
+                      className="sr-only"
+                    />
+                    <span className="text-sm font-medium">{option}</span>
+                  </label>
+                ))}
+              </div>
+              {errors.specialFocus && (
+                <p className="text-red-500 text-sm mt-1">{errors.specialFocus.message}</p>
+              )}
             </div>
 
             <button
@@ -276,16 +292,10 @@ export default function Home() {
               disabled={isSubmitting}
               className="w-full bg-plum hover:bg-plum-dark text-gold-soft font-bold py-4 px-6 rounded-lg text-lg shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isSubmitting ? 'Processing...' : 'Submit and Pay ₹499'}
+              {isSubmitting ? 'Processing...' : 'Request my handwritten Kundli for ₹499'}
             </button>
           </form>
-        </div>
-
-        <div className="text-center text-sm text-gray-600">
-          <p>🔒 Secure payment powered by Cashfree</p>
-          <p className="mt-2">Your data is safe and encrypted</p>
-        </div>
-      </div>
-    </div>
+      }
+    />
   )
 }

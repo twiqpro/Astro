@@ -23,6 +23,7 @@ model KundliLead {
   // Contact details
   email String
   phone String
+  specialFocus String? @map("special_focus")
 
   // Payment details
   paymentStatus   String  @default("pending")

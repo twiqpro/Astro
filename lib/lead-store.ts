@@ -14,6 +14,7 @@ export type StoredLead = {
   longitude: number
   email: string
   phone: string
+  specialFocus: string
   paymentStatus: string
   cashfreeOrderId: string | null
   cashfreePaymentId: string | null
@@ -49,6 +50,7 @@ type LeadRow = {
   longitude: number
   email: string
   phone: string
+  special_focus: string | null
   payment_status: string
   cashfree_order_id: string | null
   cashfree_payment_id: string | null
@@ -68,6 +70,7 @@ function requestColumns(input: KundliRequestInput) {
     longitude: input.longitude,
     email: input.email,
     phone: input.phone,
+    specialFocus: input.specialFocus.join(", "),
   }
 }
 
@@ -84,6 +87,7 @@ function fromRow(row: LeadRow): StoredLead {
     longitude: row.longitude,
     email: row.email,
     phone: row.phone,
+    specialFocus: row.special_focus ?? "",
     paymentStatus: row.payment_status,
     cashfreeOrderId: row.cashfree_order_id,
     cashfreePaymentId: row.cashfree_payment_id,
@@ -106,15 +110,17 @@ export async function insertLead(orderId: string, input: KundliRequestInput) {
   const details = requestColumns(input)
   const db = await getD1()
   if (!db) {
-    return prisma.kundliLead.create({
+    const { specialFocus, ...birthDetails } = details
+    const created = await prisma.kundliLead.create({
       data: {
-        ...details,
+        ...birthDetails,
         paymentStatus: "pending",
         cashfreeOrderId: orderId,
         amountPaise: 49900,
         currency: "INR",
       },
     })
+    return { ...created, specialFocus }
   }
 
   const now = new Date().toISOString()
@@ -123,9 +129,9 @@ export async function insertLead(orderId: string, input: KundliRequestInput) {
     .prepare(
       `INSERT INTO kundli_leads (
         id, created_at, updated_at, full_name, gender, date_of_birth, birth_time,
-        birth_place, latitude, longitude, email, phone, payment_status,
+        birth_place, latitude, longitude, email, phone, special_focus, payment_status,
         cashfree_order_id, amount_paise, currency
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, 49900, 'INR')`
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, 49900, 'INR')`
     )
     .bind(
       id,
@@ -140,6 +146,7 @@ export async function insertLead(orderId: string, input: KundliRequestInput) {
       details.longitude,
       details.email,
       details.phone,
+      details.specialFocus,
       orderId
     )
     .run()
@@ -154,9 +161,10 @@ export async function insertLead(orderId: string, input: KundliRequestInput) {
 export async function findLeadByOrderId(orderId: string) {
   const db = await getD1()
   if (!db) {
-    return prisma.kundliLead.findFirst({
+    const lead = await prisma.kundliLead.findFirst({
       where: { cashfreeOrderId: orderId },
     })
+    return lead ? { ...lead, specialFocus: "" } : null
   }
 
   const row = await db
@@ -169,10 +177,11 @@ export async function findLeadByOrderId(orderId: string) {
 export async function updateLead(id: string, patch: LeadPatch) {
   const db = await getD1()
   if (!db) {
-    return prisma.kundliLead.update({
+    const updated = await prisma.kundliLead.update({
       where: { id },
       data: patch,
     })
+    return { ...updated, specialFocus: "" }
   }
 
   const current = await db
