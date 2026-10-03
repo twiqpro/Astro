@@ -1,0 +1,36 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model KundliLead {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // User details
+  fullName     String
+  gender       String
+  dateOfBirth  DateTime
+  birthTime    String
+  birthPlace   String
+  latitude     Float
+  longitude    Float
+
+  // Contact details
+  email String
+  phone String
+
+  // Payment details
+  paymentStatus   String  @default("pending")
+  cashfreeOrderId String?
+  cashfreePaymentId String?
+  amountPaise     Int     @default(49900)
+  currency        String  @default("INR")
+  notifiedAt      DateTime?
+
+  @@map("kundli_leads")
+}

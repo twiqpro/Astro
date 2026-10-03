@@ -1,0 +1,32 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "moolank",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2025-05-28",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "observability": {
+    "enabled": true
+  },
+  "vars": {
+    "NEXT_PUBLIC_APP_URL": "https://moolank.life",
+    "NOTIFY_EMAIL": "twiq.pro@gmail.com",
+    "RESEND_FROM": "Jyotish Verify <alerts@twiq.pro>"
+  },
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "moolank"
+    }
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "twiq-astro",
+      "database_id": "2809953a-1a9f-4840-b56e-c48fcafd0d1c"
+    }
+  ]
+}

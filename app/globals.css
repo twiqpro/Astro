@@ -1,0 +1,59 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f7f3ea;
+  --foreground: #2c1428;
+  color-scheme: light;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-cream: #f7f3ea;
+  --color-plum: #4c1d45;
+  --color-plum-dark: #3a1534;
+  --color-gold: #c6a15a;
+  --color-gold-soft: #f3e6c8;
+  --color-ink: #2c1428;
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+input,
+textarea,
+select {
+  color: #171717;
+  background-color: #ffffff;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #9ca3af;
+}
+
+input.dob-picker {
+  color: transparent;
+  background-color: transparent;
+  caret-color: transparent;
+}
+
+input.dob-picker::-webkit-datetime-edit,
+input.dob-picker::-webkit-datetime-edit-fields-wrapper,
+input.dob-picker::-webkit-datetime-edit-text,
+input.dob-picker::-webkit-datetime-edit-month-field,
+input.dob-picker::-webkit-datetime-edit-day-field,
+input.dob-picker::-webkit-datetime-edit-year-field {
+  color: transparent;
+  background: transparent;
+  pointer-events: none;
+}
+
+input.dob-picker::-webkit-calendar-picker-indicator {
+  display: none;
+}
